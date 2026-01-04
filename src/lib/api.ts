@@ -40,7 +40,7 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 // 🔥 CORRECT BACKEND URL (working one with 52 tasks)
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://hackathon-todo-app-by-wajahat-ali-l.vercel.app';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://hackathons-wajahat-todo-nine.vercel.app';
 
 function getApiBase(): string {
   return API_BASE.replace(/\/$/, '');
