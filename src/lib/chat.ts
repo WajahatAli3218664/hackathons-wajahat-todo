@@ -19,7 +19,7 @@ export async function sendChatMessage(
     throw new Error('Please logout and login again to refresh your session.');
   }
   
-  const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://hackathon-todo-app-by-wajahat-ali-l.vercel.app/api/chat';
+  const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://hackathons-wajahat-todo-nine.vercel.app/api/chat';
   
   const response = await fetch(CHAT_API_URL, {
     method: 'POST',
