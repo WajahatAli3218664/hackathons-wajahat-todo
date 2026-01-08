@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-app-config
+  namespace: todo-app
+data:
+  # Backend configuration
+  CORS_ORIGINS: "http://localhost:3000,http://todo-app.local"
+  PYTHONPATH: "/app"
+  PYTHONUNBUFFERED: "1"
+  
+  # Frontend configuration
+  NEXT_PUBLIC_API_URL: "http://backend-service:8000"
+  NEXT_PUBLIC_CHAT_API_URL: "http://backend-service:8000/api/chat"
+  NODE_ENV: "production"
+  NEXT_TELEMETRY_DISABLED: "1"

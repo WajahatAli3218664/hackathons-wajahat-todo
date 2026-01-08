@@ -21,6 +21,13 @@ A modern, responsive multi-user todo web application with AI-powered conversatio
 - **Smart Task Management**: AI interprets your intent and executes the right operations
 - **Multi-Turn Conversations**: Maintain context across multiple messages
 
+### Phase IV - Local Kubernetes Deployment
+- **Container Orchestration**: Deploy on local Kubernetes cluster using Minikube
+- **Docker Containerization**: Optimized multi-stage Docker images for frontend and backend
+- **Helm Charts**: Parameterized deployment templates for easy management
+- **AI-Powered DevOps**: Integration with Gordon (Docker AI), kubectl-ai, and kagent
+- **Production Ready**: Health checks, scaling, monitoring, and security best practices
+
 ## Tech Stack
 
 ### Frontend
@@ -38,6 +45,13 @@ A modern, responsive multi-user todo web application with AI-powered conversatio
 - OpenAI GPT-4o for AI responses
 - MCP (Model Context Protocol) for tool integration
 - Neon Serverless PostgreSQL
+
+### DevOps & Deployment
+- Docker (multi-stage builds)
+- Kubernetes (Minikube for local)
+- Helm Charts
+- Gordon (Docker AI Agent)
+- kubectl-ai & kagent (AI-powered K8s management)
 
 ## Project Structure
 
@@ -86,12 +100,40 @@ todo-web-app/
 │   ├── requirements.txt
 │   └── .env.example
 │
-├── specs/002-ai-chatbot/       # Phase III specification
-│   ├── spec.md                 # Feature specification
-│   ├── plan.md                 # Architecture plan
-│   ├── tasks.md                # Implementation tasks
-│   ├── quickstart.md           # Development quickstart
-│   └── data-model.md           # Data models
+├── specs/
+│   ├── 002-ai-chatbot/         # Phase III specification
+│   │   ├── spec.md             # Feature specification
+│   │   ├── plan.md             # Architecture plan
+│   │   ├── tasks.md            # Implementation tasks
+│   │   ├── quickstart.md       # Development quickstart
+│   │   └── data-model.md       # Data models
+│   └── 003-kubernetes-deployment/ # Phase IV specification
+│       ├── spec.md             # Kubernetes deployment spec
+│       ├── plan.md             # Deployment architecture
+│       └── tasks.md            # Implementation tasks
+│
+├── k8s/                        # Kubernetes deployment files
+│   ├── docker/                 # Docker configurations
+│   │   ├── frontend/Dockerfile # Next.js container
+│   │   ├── backend/Dockerfile  # FastAPI container
+│   │   └── docker-compose.yml  # Local testing
+│   ├── manifests/              # Kubernetes manifests
+│   │   ├── namespace.yaml      # Namespace configuration
+│   │   ├── configmap.yaml      # Environment variables
+│   │   ├── secrets.yaml        # Sensitive data
+│   │   ├── *-deployment.yaml   # Application deployments
+│   │   ├── *-service.yaml      # Service definitions
+│   │   └── ingress.yaml        # External access
+│   ├── helm/                   # Helm charts
+│   │   └── todo-app/           # Main application chart
+│   │       ├── Chart.yaml      # Chart metadata
+│   │       ├── values.yaml     # Configuration values
+│   │       └── templates/      # Kubernetes templates
+│   ├── scripts/                # Deployment automation
+│   │   ├── setup-minikube.sh   # Minikube setup
+│   │   ├── deploy.sh           # Deployment script
+│   │   └── ai-commands.md      # AI DevOps commands
+│   └── README.md               # Deployment guide
 │
 ├── security_test.md            # User isolation verification
 ├── performance_test.md         # Performance test results
@@ -100,11 +142,20 @@ todo-web-app/
 
 ## Prerequisites
 
+### Development
 - Node.js 18+ for frontend
 - Python 3.11+ for backend
 - Neon PostgreSQL account (free tier available)
 - OpenAI API key (for Phase III AI features)
 - Git
+
+### Kubernetes Deployment (Phase IV)
+- Docker Desktop 4.53+ (for Gordon AI)
+- Minikube
+- kubectl
+- Helm 3.x
+- kubectl-ai
+- kagent
 
 ## Setup
 
@@ -328,16 +379,40 @@ npm run lint
 
 ## Documentation
 
+### Phase III - AI Chatbot
 - [Phase III Specification](./specs/002-ai-chatbot/spec.md)
 - [Phase III Architecture Plan](./specs/002-ai-chatbot/plan.md)
 - [Quickstart Guide](./specs/002-ai-chatbot/quickstart.md)
+
+### Phase IV - Kubernetes Deployment
+- [Phase IV Specification](./specs/003-kubernetes-deployment/spec.md)
+- [Phase IV Architecture Plan](./specs/003-kubernetes-deployment/plan.md)
+- [Kubernetes Deployment Guide](./k8s/README.md)
+- [AI DevOps Commands](./k8s/scripts/ai-commands.md)
+
+### Testing & Security
 - [Security Tests](./security_test.md)
 - [Performance Tests](./performance_test.md)
 
 ## Deployment
 
-### Frontend (Vercel)
+### Local Kubernetes (Phase IV) - Recommended
 
+```bash
+# Quick start with Minikube
+cd k8s
+./scripts/setup-minikube.sh
+./scripts/deploy.sh
+
+# Access application
+minikube service todo-app-frontend -n todo-app --url
+```
+
+See [Kubernetes Deployment Guide](./k8s/README.md) for detailed instructions.
+
+### Cloud Deployment (Traditional)
+
+#### Frontend (Vercel)
 1. Push your code to a Git repository
 2. Connect to Vercel
 3. Add environment variables:
@@ -345,8 +420,7 @@ npm run lint
    - `NEXT_PUBLIC_CHAT_API_URL`: Your production chat API URL
    - `BETTER_AUTH_SECRET`: Same secret as backend
 
-### Backend (Railway/Render/Heroku)
-
+#### Backend (Railway/Render/Heroku)
 1. Set environment variables:
    - `DATABASE_URL`: Your Neon connection string
    - `BETTER_AUTH_SECRET`: Same secret as frontend
