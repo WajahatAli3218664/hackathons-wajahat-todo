@@ -1,2 +1,25 @@
-fastapi==0.104.1
-uvicorn==0.24.0
+# FastAPI and web server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Database
+sqlmodel>=0.0.14
+sqlalchemy>=2.0.25
+aiosqlite>=0.19.0
+asyncpg>=0.29.0
+psycopg2-binary==2.9.9
+
+# Authentication
+pyjwt>=2.8.0
+passlib[bcrypt]>=1.7.4
+email-validator>=2.1.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# AI Chat dependencies
+groq>=0.4.1
+mcp>=0.9.0
+
+# HTTP client
+httpx>=0.26.0

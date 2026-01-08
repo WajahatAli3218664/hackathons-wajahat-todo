@@ -8,6 +8,7 @@ This package exports:
 - TaskUpdate: Schema for updating tasks
 - TaskResponse: Schema for task responses
 - TaskListResponse: Schema for task list responses
+- Priority: Enum for task priorities
 - Conversation: SQLModel for chat conversations
 - Message: SQLModel for chat messages
 - MessageRole: Enum for message roles (user/assistant)
@@ -15,7 +16,7 @@ This package exports:
 """
 
 from .user import User
-from .task import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse
+from .task import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, Priority
 from .chat import Conversation, Message, MessageRole
 from .error import ErrorResponse
 
@@ -26,6 +27,7 @@ __all__ = [
     "TaskUpdate",
     "TaskResponse",
     "TaskListResponse",
+    "Priority",
     "Conversation",
     "Message",
     "MessageRole",
