@@ -1,8 +1,8 @@
 # Multi-stage build for FastAPI backend
 FROM python:3.11-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache gcc musl-dev libffi-dev wget
+# Install build dependencies including PostgreSQL
+RUN apk add --no-cache gcc musl-dev libffi-dev postgresql-dev wget
 
 # Set work directory
 WORKDIR /app
@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 # Production stage
 FROM python:3.11-alpine
 
-# Install wget for health checks
-RUN apk add --no-cache wget
+# Install runtime dependencies
+RUN apk add --no-cache wget postgresql-libs
 
 # Create non-root user
 RUN addgroup -g 1001 -S appgroup && \
