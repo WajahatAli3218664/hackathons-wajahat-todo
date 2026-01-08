@@ -24,6 +24,7 @@ from uuid import UUID
 from ..db import get_db
 from ..models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, Priority
 from ..dependencies.auth import get_current_user
+from ..events import event_publisher
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -136,6 +137,23 @@ async def create_task(
     db.add(task)
     await db.commit()
     await db.refresh(task)
+
+    # Publish task created event
+    task_dict = {
+        "id": str(task.id),
+        "title": task.title,
+        "description": task.description,
+        "priority": task.priority.value,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "recurring_pattern": task.recurring_pattern.value if task.recurring_pattern else None,
+        "recurring_interval": task.recurring_interval,
+        "reminder_minutes": task.reminder_minutes,
+    }
+    await event_publisher.publish_task_event("created", task_dict, current_user_id)
+    
+    # Publish reminder event if due date is set
+    if task.due_date:
+        await event_publisher.publish_reminder_event(task_dict, current_user_id)
 
     logger.info(f"Task created: {task.id} for user {current_user_id}")
     return TaskResponse.from_orm(task)
@@ -258,6 +276,17 @@ async def update_task(
 
     await db.commit()
     await db.refresh(task)
+
+    # Publish task updated event
+    task_dict = {
+        "id": str(task.id),
+        "title": task.title,
+        "description": task.description,
+        "priority": task.priority.value,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "completed": task.completed,
+    }
+    await event_publisher.publish_task_event("updated", task_dict, current_user_id)
 
     logger.info(f"Task updated: {task_id}")
     return TaskResponse.from_orm(task)

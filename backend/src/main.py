@@ -16,6 +16,7 @@ from .db import get_db, init_db, close_db, verify_database_connection
 from .routes.tasks import router as tasks_router
 from .routes.auth_simple import router as auth_router
 from .routes.chat import router as chat_router
+from .events import startup_events, shutdown_events
 
 # Configure logging
 logging.basicConfig(
@@ -28,11 +29,16 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Starting Todo Web Application...")
     logger.info("Database will connect on first request (lazy initialization)")
+    
+    # Start event system
+    await startup_events()
+    
     logger.info("Application startup complete")
     yield
     logger.info("Shutting down Todo Web Application...")
     try:
         await close_db()
+        await shutdown_events()
     except Exception as e:
         logger.warning(f"Error during shutdown: {e}")
     logger.info("Application shutdown complete")
