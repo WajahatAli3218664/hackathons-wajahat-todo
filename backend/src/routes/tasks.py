@@ -14,15 +14,15 @@ All queries are filtered by current_user.id for data isolation.
 """
 
 import logging
-from typing import Annotated
+from typing import Annotated, Optional, List
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
+from sqlalchemy import select, or_, and_, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from ..db import get_db
-from ..models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse
+from ..models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, Priority
 from ..dependencies.auth import get_current_user
 
 # Configure logging
@@ -36,30 +36,56 @@ router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 async def list_tasks(
     current_user_id: Annotated[UUID, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    search: Optional[str] = Query(None, description="Search in title and description"),
+    priority: Optional[Priority] = Query(None, description="Filter by priority"),
+    completed: Optional[bool] = Query(None, description="Filter by completion status"),
+    sort_by: Optional[str] = Query("created_at", description="Sort by field"),
+    sort_order: Optional[str] = Query("desc", description="Sort order (asc/desc)"),
 ) -> TaskListResponse:
     """
-    List all tasks for the authenticated user.
-
-    Returns a list of all tasks belonging to the current user,
-    ordered by creation date (newest first).
+    List all tasks for the authenticated user with search, filter, and sort.
 
     Args:
-        current_user_id: UUID from JWT token (injected by get_current_user)
-        db: Database session (injected by get_db)
+        current_user_id: UUID from JWT token
+        db: Database session
+        search: Search term for title and description
+        priority: Filter by priority level
+        completed: Filter by completion status
+        sort_by: Field to sort by (created_at, due_date, priority, title)
+        sort_order: Sort order (asc or desc)
 
     Returns:
-        TaskListResponse: List of tasks with total count
-
-    Response:
-        - 200: Success - returns list of tasks
-        - 401: Unauthorized - missing or invalid JWT token
+        TaskListResponse: Filtered and sorted list of tasks
     """
-    result = await db.execute(
-        select(Task)
-        .where(Task.user_id == current_user_id)
-        .order_by(Task.created_at.desc())
-    )
+    query = select(Task).where(Task.user_id == current_user_id)
+    
+    # Apply search filter
+    if search:
+        search_term = f"%{search}%"
+        query = query.where(
+            or_(
+                Task.title.ilike(search_term),
+                Task.description.ilike(search_term)
+            )
+        )
+    
+    # Apply filters
+    if priority is not None:
+        query = query.where(Task.priority == priority)
+    
+    if completed is not None:
+        query = query.where(Task.completed == completed)
+    
+    # Apply sorting
+    sort_column = getattr(Task, sort_by, Task.created_at)
+    if sort_order == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+    
+    result = await db.execute(query)
     tasks = result.scalars().all()
+    
     return TaskListResponse(
         tasks=[TaskResponse.from_orm(task) for task in tasks],
         total=len(tasks),
@@ -101,6 +127,11 @@ async def create_task(
         user_id=current_user_id,
         title=task_data.title.strip(),
         description=task_data.description.strip() if task_data.description else None,
+        priority=task_data.priority,
+        due_date=task_data.due_date,
+        recurring_pattern=task_data.recurring_pattern,
+        recurring_interval=task_data.recurring_interval,
+        reminder_minutes=task_data.reminder_minutes,
     )
     db.add(task)
     await db.commit()
@@ -206,6 +237,24 @@ async def update_task(
 
     if task_data.description is not None:
         task.description = task_data.description.strip() if task_data.description else None
+
+    if task_data.completed is not None:
+        task.completed = task_data.completed
+
+    if task_data.priority is not None:
+        task.priority = task_data.priority
+
+    if task_data.due_date is not None:
+        task.due_date = task_data.due_date
+
+    if task_data.recurring_pattern is not None:
+        task.recurring_pattern = task_data.recurring_pattern
+
+    if task_data.recurring_interval is not None:
+        task.recurring_interval = task_data.recurring_interval
+
+    if task_data.reminder_minutes is not None:
+        task.reminder_minutes = task_data.reminder_minutes
 
     await db.commit()
     await db.refresh(task)
